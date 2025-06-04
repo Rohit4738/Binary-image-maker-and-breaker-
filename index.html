@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Binary Converter | Image ↔ Binary Translator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: var(--gray);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .converter-app {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 992px) {
+            .converter-app {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .converter-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 1.5rem;
+            transition: var(--transition);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .converter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .file-upload {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .file-upload-input {
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            position: absolute;
+            z-index: -1;
+        }
+
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+            border: 2px dashed #d1d5db;
+            border-radius: var(--border-radius);
+            background-color: #f9fafb;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            flex-direction: column;
+        }
+
+        .file-upload-label:hover {
+            border-color: var(--primary);
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+
+        .file-upload-icon {
+            font-size: 1.75rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .file-upload-text {
+            font-weight: 500;
+            color: var(--gray);
+        }
+
+        .file-upload-text strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .preview-container {
+            margin: 1rem 0;
+            text-align: center;
+            display: none;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .binary-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: var(--border-radius);
+            font-family: 'Fira Code', 'Courier New', monospace;
+            resize: vertical;
+            background-color: #f9fafb;
+            transition: var(--transition);
+            line-height: 1.5;
+        }
+
+        .binary-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            background-color: white;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn i {
+            margin-right: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #e9ecef;
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: #dee2e6;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #3ab7d8;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .output-info {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .output-info i {
+            margin-right: 0.5rem;
+        }
+
+        .result-container {
+            margin-top: 1.5rem;
+            display: none;
+        }
+
+        .result-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .result-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .notification {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            background-color: var(--success);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            transform: translateX(200%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification i {
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 0.5rem;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85rem;
+            font-weight: normal;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .dimensions-input {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .dimension-group {
+            flex: 1;
+        }
+
+        .dimension-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: var(--border-radius);
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pixel Binary Converter</h1>
+            <p class="subtitle">Seamlessly translate between images and binary code with our intuitive converter tool</p>
+        </header>
+
+        <div class="converter-app">
+            <!-- Image to Binary Section -->
+            <div class="converter-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <h2 class="card-title">Image to Binary</h2>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Upload your image</label>
+                    <div class="file-upload">
+                        <input type="file" id="image-upload" class="file-upload-input" accept="image/*">
+                        <label for="image-upload" class="file-upload-label">
+                            <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+                            <span class="file-upload-text"><strong>Click to upload</strong> or drag and drop</span>
+                            <span class="file-upload-text">PNG, JPG, GIF (Max 5MB)</span>
+                        </label>
+                    </div>
+
+                    <div class="preview-container" id="upload-preview">
+                        <p>Image Preview:</p>
+                        <img id="uploaded-image" class="preview-image" src="#" alt="Uploaded image preview">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="binary-output" class="input-label">Binary Output</label>
+                    <textarea id="binary-output" class="binary-textarea" readonly placeholder="Your binary code will appear here..."></textarea>
+                    <div class="output-info" id="binary-stats">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Upload an image to generate binary code</span>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="convert-to-binary" class="btn btn-primary">
+                        <i class="fas fa-code"></i> Convert to Binary
+                    </button>
+                    <button id="copy-binary" class="btn btn-secondary" disabled>
+                        <i class="far fa-copy"></i> Copy Binary
+                    </button>
+                </div>
+            </div>
+
+            <!-- Binary to Image Section -->
+            <div class="converter-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-binary"></i>
+                    </div>
+                    <h2 class="card-title">Binary to Image</h2>
+                </div>
+
+                <div class="input-group">
+                    <label for="binary-input" class="input-label">Paste your binary code</label>
+                    <textarea id="binary-input" class="binary-textarea" placeholder="Paste your 0s and 1s here..."></textarea>
+                    <div class="output-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Each line represents a row of pixels (1=white, 0=black)</span>
+                    </div>
+                </div>
+
+                <div class="dimensions-input">
+                    <div class="dimension-group">
+                        <label for="image-width" class="input-label">Width (pixels)</label>
+                        <input type="number" id="image-width" class="dimension-input" placeholder="Auto-detect" min="10" max="500">
+                    </div>
+                    <div class="dimension-group">
+                        <label for="image-height" class="input-label">Height (pixels)</label>
+                        <input type="number" id="image-height" class="dimension-input" placeholder="Auto-detect" min="10" max="500">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="convert-to-image" class="btn btn-primary">
+                        <i class="fas fa-image"></i> Convert to Image
+                    </button>
+                    <button id="download-image" class="btn btn-success" disabled>
+                        <i class="fas fa-download"></i> Download Image
+                    </button>
+                </div>
+
+                <div class="result-container" id="result-container">
+                    <p class="result-title">Reconstructed Image:</p>
+                    <img id="image-result" class="result-image" src="#" alt="Reconstructed image from binary">
+                    <div class="output-info" id="image-stats">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Image will appear here after conversion</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Pixel Binary Converter &copy; 2023 | All rights reserved</p>
+        </footer>
+    </div>
+
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span>Binary copied to clipboard!</span>
+    </div>
+
+    <script>
+        // Notification system
+        function showNotification(message, isSuccess = true) {
+            const notification = document.getElementById('notification');
+            const icon = notification.querySelector('i');
+            
+            notification.querySelector('span').textContent = message;
+            
+            if (isSuccess) {
+                notification.style.backgroundColor = '#4cc9f0';
+                icon.className = 'fas fa-check-circle';
+            } else {
+                notification.style.backgroundColor = '#f72585';
+                icon.className = 'fas fa-exclamation-circle';
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Image upload preview
+        document.getElementById('image-upload').addEventListener('change', function(e) {
+            const uploadPreview = document.getElementById('upload-preview');
+            const uploadedImage = document.getElementById('uploaded-image');
+            const binaryOutput = document.getElementById('binary-output');
+            const binaryStats = document.getElementById('binary-stats');
+            const copyButton = document.getElementById('copy-binary');
+            
+            if (e.target.files.length === 0) {
+                uploadPreview.style.display = 'none';
+                return;
+            }
+            
+            const file = e.target.files[0];
+            
+            // Check file size (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                showNotification('File size exceeds 5MB limit', false);
+                e.target.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onloadstart = function() {
+                copyButton.disabled = true;
+                binaryOutput.value = '';
+                binaryStats.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading image...';
+            };
+            
+            reader.onload = function(event) {
+                uploadedImage.src = event.target.result;
+                uploadPreview.style.display = 'block';
+                
+                // Reset binary output
+                binaryOutput.value = '';
+                binaryStats.innerHTML = '<i class="fas fa-info-circle"></i> Ready to convert';
+                copyButton.disabled = true;
+            };
+            
+            reader.readAsDataURL(file);
+        });
+
+        // Drag and drop functionality
+        const fileUploadLabel = document.querySelector('.file-upload-label');
+        
+        fileUploadLabel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadLabel.style.borderColor = '#4361ee';
+            fileUploadLabel.style.backgroundColor = 'rgba(67, 97, 238, 0.1)';
+        });
+        
+        fileUploadLabel.addEventListener('dragleave', () => {
+            fileUploadLabel.style.borderColor = '#d1d5db';
+            fileUploadLabel.style.backgroundColor = '#f9fafb';
+        });
+        
+        fileUploadLabel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadLabel.style.borderColor = '#d1d5db';
+            fileUploadLabel.style.backgroundColor = '#f9fafb';
+            
+            if (e.dataTransfer.files.length) {
+                document.getElementById('image-upload').files = e.dataTransfer.files;
+                const event = new Event('change');
+                document.getElementById('image-upload').dispatchEvent(event);
+            }
+        });
+
+        // Image to Binary Converter
+        document.getElementById('convert-to-binary').addEventListener('click', async function() {
+            const fileInput = document.getElementById('image-upload');
+            const binaryOutput = document.getElementById('binary-output');
+            const binaryStats = document.getElementById('binary-stats');
+            const copyButton = document.getElementById('copy-binary');
+            const convertButton = this;
+            
+            if (fileInput.files.length === 0) {
+                showNotification('Please upload an image first', false);
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            // Show loading state
+            convertButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            convertButton.classList.add('loading');
+            binaryStats.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting image to binary...';
+            
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Create canvas to process the image
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Set canvas dimensions (resize if too large for performance)
+                    const maxWidth = 100;
+                    const ratio = maxWidth / img.width;
+                    canvas.width = maxWidth;
+                    canvas.height = img.height * ratio;
+                    
+                    // Draw image and convert to black and white
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+                    
+                    // Convert to binary (black and white)
+                    let binaryString = '';
+                    for (let i = 0; i < data.length; i += 4) {
+                        // Simple luminance calculation
+                        const luminance = (data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114);
+                        const bit = luminance > 128 ? '1' : '0';
+                        binaryString += bit;
+                        
+                        // Only use one pixel per "pixel" (skip alpha)
+                        if ((i/4 + 1) % canvas.width === 0) {
+                            binaryString += '\n';
+                        }
+                    }
+                    
+                    // Process in chunks to avoid UI freeze
+                    const processChunk = (start, end) => {
+                        return new Promise(resolve => {
+                            setTimeout(() => {
+                                binaryOutput.value = binaryString.substring(0, end);
+                                resolve();
+                            }, 0);
+                        });
+                    };
+                    
+                    const chunkSize = 10000;
+                    const processAllChunks = async () => {
+                        for (let i = 0; i < binaryString.length; i += chunkSize) {
+                            await processChunk(i, i + chunkSize);
+                        }
+                        binaryOutput.value = binaryString;
+                    };
+                    
+                    processAllChunks().then(() => {
+                        copyButton.disabled = false;
+                        
+                        // Display stats
+                        const binaryLength = binaryString.replace(/\n/g, '').length;
+                        binaryStats.innerHTML = `<i class="fas fa-info-circle"></i> ${binaryLength} bits (${canvas.width}×${canvas.height} = ${canvas.width * canvas.height} pixels)`;
+                        
+                        // Reset button state
+                        convertButton.innerHTML = '<i class="fas fa-code"></i> Convert to Binary';
+                        convertButton.classList.remove('loading');
+                        
+                        showNotification('Image converted to binary successfully!');
+                    });
+                };
+                
+                img.onerror = function() {
+                    binaryStats.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error loading image';
+                    convertButton.innerHTML = '<i class="fas fa-code"></i> Convert to Binary';
+                    convertButton.classList.remove('loading');
+                    showNotification('Error processing image', false);
+                };
+                
+                img.src = e.target.result;
+            };
+            
+            reader.onerror = function() {
+                binaryStats.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error reading file';
+                convertButton.innerHTML = '<i class="fas fa-code"></i> Convert to Binary';
+                convertButton.classList.remove('loading');
+                showNotification('Error reading image file', false);
+            };
+            
+            reader.readAsDataURL(file);
+        });
+        
+        // Copy binary to clipboard
+        document.getElementById('copy-binary').addEventListener('click', function() {
+            const binaryOutput = document.getElementById('binary-output');
+            
+            if (!binaryOutput.value) {
+                showNotification('No binary code to copy', false);
+                return;
+            }
+            
+            navigator.clipboard.writeText(binaryOutput.value)
+                .then(() => {
+                    showNotification('Binary copied to clipboard!');
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    showNotification('Failed to copy binary', false);
+                });
+        });
+        
+        // Binary to Image Converter
+        document.getElementById('convert-to-image').addEventListener('click', function() {
+            const binaryInput = document.getElementById('binary-input').value;
+            const widthInput = document.getElementById('image-width');
+            const heightInput = document.getElementById('image-height');
+            const resultContainer = document.getElementById('result-container');
+            const imageResult = document.getElementById('image-result');
+            const imageStats = document.getElementById('image-stats');
+            const downloadButton = document.getElementById('download-image');
+            const convertButton = this;
+            
+            if (!binaryInput) {
+                showNotification('Please enter binary code first', false);
+                return;
+            }
+            
+            // Clean the binary input (remove all non-binary characters)
+            const cleanBinary = binaryInput.replace(/[^01\n]/g, '');
+            const lines = cleanBinary.split('\n').filter(line => line.length > 0);
+            
+            if (lines.length === 0) {
+                showNotification('No valid binary data found', false);
+                return;
+            }
+            
+            // Show loading state
+            convertButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            convertButton.classList.add('loading');
+            imageStats.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting binary to image...';
+            
+            // Use setTimeout to allow UI to update
+            setTimeout(() => {
+                try {
+                    // Determine image dimensions
+                    let width, height;
+                    
+                    if (widthInput.value && heightInput.value) {
+                        // Use manual dimensions if provided
+                        width = parseInt(widthInput.value);
+                        height = parseInt(heightInput.value);
+                    } else {
+                        // Auto-detect dimensions
+                        width = lines[0].length;
+                        height = lines.length;
+                        
+                        // Update dimension inputs
+                        widthInput.value = width;
+                        heightInput.value = height;
+                    }
+                    
+                    // Create canvas
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Set canvas dimensions
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // Create image data
+                    const imageData = ctx.createImageData(width, height);
+                    const data = imageData.data;
+                    
+                    let dataIndex = 0;
+                    let lineIndex = 0;
+                    
+                    for (let y = 0; y < height; y++) {
+                        const line = lines[lineIndex] || '';
+                        lineIndex = (lineIndex + 1) % lines.length;
+                        
+                        for (let x = 0; x < width; x++) {
+                            const bit = line[x] || '0';
+                            const value = bit === '1' ? 255 : 0;
+                            
+                            data[dataIndex++] = value;   // R
+                            data[dataIndex++] = value;   // G
+                            data[dataIndex++] = value;   // B
+                            data[dataIndex++] = 255;     // A (fully opaque)
+                        }
+                    }
+                    
+                    // Put the image data onto the canvas
+                    ctx.putImageData(imageData, 0, 0);
+                    
+                    // Display the result as an image
+                    imageResult.src = canvas.toDataURL('image/png');
+                    resultContainer.style.display = 'block';
+                    downloadButton.disabled = false;
+                    
+                    // Update stats
+                    imageStats.innerHTML = `<i class="fas fa-info-circle"></i> ${width}×${height} pixels`;
+                    
+                    // Reset button state
+                    convertButton.innerHTML = '<i class="fas fa-image"></i> Convert to Image';
+                    convertButton.classList.remove('loading');
+                    
+                    showNotification('Binary converted to image successfully!');
+                } catch (error) {
+                    console.error('Conversion error:', error);
+                    imageStats.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error during conversion';
+                    convertButton.innerHTML = '<i class="fas fa-image"></i> Convert to Image';
+                    convertButton.classList.remove('loading');
+                    showNotification('Error converting binary to image', false);
+                }
+            }, 100);
+        });
+        
+        // Download Image
+        document.getElementById('download-image').addEventListener('click', function() {
+            const imageResult = document.getElementById('image-result');
+            const binaryInput = document.getElementById('binary-input').value;
+            
+            if (!binaryInput || imageResult.style.display === 'none') {
+                showNotification('No image to download', false);
+                return;
+            }
+            
+            // Create a temporary link element
+            const link = document.createElement('a');
+            link.href = imageResult.src;
+            link.download = `binary-image-${new Date().toISOString().slice(0, 10)}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Image downloaded successfully!');
+        });
+    </script>
+</body>
+</html>
